@@ -64,7 +64,14 @@
          </widget>
         </item>
         <item>
-         <widget class="QDoubleSpinBox" name="doubleSpinBox"/>
+         <widget class="QDoubleSpinBox" name="doubleSpinBox">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="minimum">
+           <double>-99.989999999999995</double>
+          </property>
+         </widget>
         </item>
        </layout>
       </item>
@@ -79,11 +86,17 @@
         </item>
         <item>
          <widget class="QDoubleSpinBox" name="doubleSpinBox_2">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
           <property name="readOnly">
            <bool>false</bool>
           </property>
           <property name="accelerated">
            <bool>false</bool>
+          </property>
+          <property name="minimum">
+           <double>-99.989999999999995</double>
           </property>
          </widget>
         </item>
@@ -109,6 +122,9 @@
        <property name="readOnly">
         <bool>false</bool>
        </property>
+       <property name="minimum">
+        <double>-99.989999999999995</double>
+       </property>
       </widget>
      </item>
     </layout>
@@ -129,16 +145,9 @@
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_5">
      <item>
-      <widget class="QPushButton" name="pushButton">
-       <property name="text">
-        <string>Ok</string>
-       </property>
-      </widget>
-     </item>
-     <item>
       <widget class="QPushButton" name="pushButton_2">
        <property name="text">
-        <string>Cancel</string>
+        <string>Add</string>
        </property>
       </widget>
      </item>
