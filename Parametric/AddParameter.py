@@ -37,7 +37,10 @@ class AddParameterTaskPanel:
         self.update()
 
     def update(self):
-        pass
+        FreeCAD.Console.PrintMessage(dir(self.form))
+        labels = [ obj.Label for obj in FreeCAD.activeDocument().Objects]
+        if labels:
+            self.form.comboBox_2.addItems(labels)
 
     def accept(self):
         FreeCADGui.Control.closeDialog()
