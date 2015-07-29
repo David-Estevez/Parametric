@@ -5,7 +5,7 @@ import os
 import FreeCAD, FreeCADGui
 import Parameter
 
-class AddParameter():
+class AddParameter:
     """Creates a new parameter"""
 
     def GetResources(self):

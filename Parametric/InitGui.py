@@ -27,6 +27,7 @@ class ParametricWorkbench (Workbench):
         self.appendContextMenu("Parametric",self.list) # add commands to the context menu
 
     def GetClassName(self):
+        """Return the name of the associated C++ class."""
         # this function is mandatory if this is a full python workbench
         return "Gui::PythonWorkbench"
 
