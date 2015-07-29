@@ -10,6 +10,8 @@ class Parameter:
         obj.addProperty("App::PropertyQuantity", "Value", "Parametric", "Value currently assigned to the parameter")
         obj.addProperty("App::PropertyString", "ObjectLabel", "Parametric", "Label of the object assigned to this parameter")
         obj.addProperty("App::PropertyString", "ObjectProperty", "Parametric", "Label of the property assigned to this parameter")
+        obj.setEditorMode("ObjectLabel", 1)
+        obj.setEditorMode("ObjectProperty", 1)
 
     def onChanged(self, obj, prop):
         "'''Do something when a property has changed'''"
@@ -48,11 +50,11 @@ class ViewProviderParameter:
 
     def updateData(self, obj, prop):
         "'''If a property of the handled feature has changed we have the chance to handle this here'''"
-        FreeCAD.Console.PrintMessage("Update data for property: " + str(prop) + "\n")
+        FreeCAD.Console.PrintMessage("[View] Update data for property: " + str(prop) + "\n")
 
     def onChanged(self, obj, prop):
         "'''Here we can do something when a single property got changed'''"
-        FreeCAD.Console.PrintMessage("Changed property: " + str(prop) + "\n")
+        FreeCAD.Console.PrintMessage("[View] Changed property: " + str(prop) + "\n")
 
     # def getIcon(self):
     #     "'''Return the icon in XPM format which will appear in the tree view. This method is\'''
@@ -98,6 +100,8 @@ class ViewProviderParameter:
 
 def makeParameter():
     FreeCAD.newDocument()
+    FreeCADGui.activateWorkbench("PartWorkbench")
+    FreeCAD.ActiveDocument.addObject("Part::Box","Box")
     a=FreeCAD.ActiveDocument.addObject("App::FeaturePython", "Parameter")
     Parameter(a)
     ViewProviderParameter(a.ViewObject)
