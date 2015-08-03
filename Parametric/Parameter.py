@@ -8,27 +8,41 @@ class Parameter:
         self.Type = "Parameter"
         obj.addProperty("App::PropertyString", "Name", "Parametric", "Name of the parameter")
         obj.addProperty("App::PropertyQuantity", "Value", "Parametric", "Value currently assigned to the parameter")
-        obj.addProperty("App::PropertyString", "ObjectLabel", "Parametric", "Label of the object assigned to this parameter")
-        obj.addProperty("App::PropertyString", "ObjectProperty", "Parametric", "Label of the property assigned to this parameter")
-        obj.setEditorMode("ObjectLabel", 1)
-        obj.setEditorMode("ObjectProperty", 1)
+        obj.addProperty("App::PropertyEnumeration", "ObjectLabel", "Parametric", "Label of the object assigned to this parameter")
+        obj.addProperty("App::PropertyEnumeration", "ObjectProperty", "Parametric", "Label of the property assigned to this parameter")
+        obj.setEditorMode("ObjectLabel", 0)
+        obj.setEditorMode("ObjectProperty", 0)
+
+        # Set default values:
+        obj.Name = obj.Label
+        obj.ObjectLabel = self.getAvailableObjectsLabels()
+        obj.ObjectProperty = self.getAvailableLabels(obj.ObjectLabel)
+        obj.Value  = FreeCAD.ActiveDocument.getObjectsByLabel(obj.ObjectLabel)[0].getPropertyByName(obj.ObjectProperty)
+
 
     def onChanged(self, obj, prop):
         "'''Do something when a property has changed'''"
         # Get value that has changed
-        changed_value = obj.getPropertyByName(prop)
-        objects = FreeCAD.ActiveDocument.getObjectsByLabel(obj.ObjectLabel)
-        if objects:
-            for object in objects:
-                setattr(object, obj.ObjectProperty, changed_value)
+        if prop == 'Value':
+            self.update_referenced_objects(obj)
+        elif prop == 'ObjectLabel':
+            previous_property = obj.ObjectProperty
+            obj.ObjectProperty = self.getAvailableLabels(obj.ObjectLabel)
+            try:
+                obj.ObjectProperty = previous_property
+            except:
+                pass
 
-        FreeCAD.Console.PrintMessage("Changed property: " + str(prop) + " with value: " + str(changed_value) + "\n")
-
+            self.update_referenced_objects(obj)
 
     def execute(self, obj):
         "'''Do something when doing a recomputation, this method is mandatory'''"
         if obj.ViewObject:
             obj.ViewObject.update()
+
+        #obj.ObjectLabel = self.getAvailableObjectsLabels()
+        #obj.ObjectProperty = self.getAvailableLabels(obj.ObjectLabel)
+
 
     # def __getstate__(self):
     #     return self.Type
@@ -37,6 +51,52 @@ class Parameter:
     #     if state:
     #         self.Type = state
     #
+
+    def updateData(self, obj, prop):
+        "'''If a property of the handled feature has changed we have the chance to handle this here'''"
+        previous_label = obj.ObjectLabel
+        previous_property = obj.ObjectProperty
+
+        obj.ObjectLabel = self.getAvailableObjectsLabels()
+        obj.ObjectProperty = self.getAvailableLabels(obj.ObjectLabel)
+
+        try:
+            obj.ObjectLabel = previous_label
+
+            try:
+                obj.ObjectProperty = previous_property
+            except:
+                pass
+        except:
+            pass
+
+    def update_referenced_objects(self, obj):
+            objects = FreeCAD.ActiveDocument.getObjectsByLabel(obj.ObjectLabel)
+
+            if objects:
+                for object in objects:
+                    try:
+                        setattr(object, obj.ObjectProperty, obj.Value)
+                        FreeCAD.Console.PrintMessage("Changed property: " + str(obj.ObjectProperty) + " with value: " + str(obj.Value) + "\n")
+                    except:
+                        FreeCAD.Console.PrintError("Could not change property: " + str(obj.ObjectProperty) + " with value: " + str(obj.Value) + "\n")
+
+    @staticmethod
+    def getAvailableObjects():
+        return [ obj for obj in FreeCAD.ActiveDocument.Objects if 'Part::' in obj.TypeId ]
+
+    @staticmethod
+    def getAvailableObjectsLabels():
+        return [ str(obj.Label) for obj in Parameter.getAvailableObjects()]
+
+    @staticmethod
+    def getAvailableLabels(obj_label):
+        obj = FreeCAD.ActiveDocument.getObjectsByLabel(obj_label)
+        if obj:
+            return [ property_name  for property_name in obj[0].PropertiesList if isinstance(getattr(obj[0], property_name), FreeCAD.Units.Quantity) ]
+        else:
+            return []
+
 
 
 class ViewProviderParameter:
