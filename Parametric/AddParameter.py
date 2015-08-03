@@ -16,7 +16,8 @@ class AddParameter:
     def Activated(self):
         FreeCAD.Console.PrintMessage("AddParameter() called!")
         task_panel = AddParameterTaskPanel()
-        FreeCADGui.Control.showDialog(task_panel)
+        # FreeCADGui.Control.showDialog(task_panel)
+        Parameter.Parameter(FreeCAD.ActiveDocument.addObject("App::FeaturePython", "Parameter"))
         return
 
     def IsActive(self):
