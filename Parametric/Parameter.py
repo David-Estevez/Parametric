@@ -6,34 +6,30 @@ class Parameter:
     def __init__(self, obj):
         obj.Proxy = self
         self.Type = "Parameter"
-        obj.addProperty("App::PropertyString", "Name", "Parametric", "Name of the parameter")
-        obj.addProperty("App::PropertyQuantity", "Value", "Parametric", "Value currently assigned to the parameter")
-        obj.addProperty("App::PropertyEnumeration", "ObjectLabel", "Parametric", "Label of the object assigned to this parameter")
-        obj.addProperty("App::PropertyEnumeration", "ObjectProperty", "Parametric", "Label of the property assigned to this parameter")
+        obj.addProperty("App::PropertyString", "Name", "Parameter", "Name of the parameter")
+        obj.addProperty("App::PropertyQuantity", "Value", "Parameter", "Value currently assigned to the parameter")
+        obj.addProperty("App::PropertyEnumeration", "ObjectLabel", "Parameter", "Label of the object assigned to this parameter")
+        obj.addProperty("App::PropertyEnumeration", "ObjectProperty", "Parameter", "Label of the property assigned to this parameter")
         obj.setEditorMode("ObjectLabel", 0)
         obj.setEditorMode("ObjectProperty", 0)
 
         # Set default values:
         obj.Name = obj.Label
         obj.ObjectLabel = self.getAvailableObjectsLabels()
-        obj.ObjectProperty = self.getAvailableLabels(obj.ObjectLabel)
-        obj.Value  = FreeCAD.ActiveDocument.getObjectsByLabel(obj.ObjectLabel)[0].getPropertyByName(obj.ObjectProperty)
+        obj.ObjectProperty = self.getAvailableProperties(obj.ObjectLabel)
+        self.onObjectPropertyChanged(obj)
 
 
     def onChanged(self, obj, prop):
         "'''Do something when a property has changed'''"
-        # Get value that has changed
+        if prop == 'Name':
+            self.
         if prop == 'Value':
-            self.update_referenced_objects(obj)
+            self.onValueChanged(obj)
         elif prop == 'ObjectLabel':
-            previous_property = obj.ObjectProperty
-            obj.ObjectProperty = self.getAvailableLabels(obj.ObjectLabel)
-            try:
-                obj.ObjectProperty = previous_property
-            except:
-                pass
-
-            self.update_referenced_objects(obj)
+            self.onObjectLabelChanged(obj)
+        elif prop == 'ObjectProperty':
+            self.onObjectPropertyChanged(obj)
 
     def execute(self, obj):
         "'''Do something when doing a recomputation, this method is mandatory'''"
@@ -43,7 +39,6 @@ class Parameter:
         #obj.ObjectLabel = self.getAvailableObjectsLabels()
         #obj.ObjectProperty = self.getAvailableLabels(obj.ObjectLabel)
 
-
     # def __getstate__(self):
     #     return self.Type
     #
@@ -52,13 +47,45 @@ class Parameter:
     #         self.Type = state
     #
 
+    # Functions to update things when something is changed
+    def onNameChanged(self, obj):
+        """ Things to do when the name of this object is changed. In the future, this should update all references to this object by name."""
+        # To be implemented
+        pass
+
+    def onValueChanged(self, obj):
+        """ Things to do when the value of the parameter is changed. Recalculates all objects that depend on this value"""
+        return self.update_referenced_objects(obj)
+
+    def onRangeChanged(self, obj):
+        """ Things to do when the range of the parameter is modified. Crops value to be within the new range"""
+        # To be implemented
+        pass
+
+    def onObjectPropertyChanged(self, obj):
+        """ Things to do when a different object property is selected. Checks the units and recomputes dependencies"""
+        # Get the value currently assigned to the reference
+        obj.Value.Value  = FreeCAD.ActiveDocument.getObjectsByLabel(obj.ObjectLabel)[0].getPropertyByName(obj.ObjectProperty).Value
+        self.onValueChanged(obj)
+
+    def onObjectLabelChanged(self, obj):
+        """ Things to do when the object label of the parameter is changed."""
+        # Get previous state and try to restore it
+        previous_property = obj.ObjectProperty
+        obj.ObjectProperty = self.getAvailableProperties(obj.ObjectLabel)
+        try:
+            obj.ObjectProperty = previous_property
+        except:
+            self.onObjectPropertyChanged(obj)
+
+
     def updateData(self, obj, prop):
         "'''If a property of the handled feature has changed we have the chance to handle this here'''"
         previous_label = obj.ObjectLabel
         previous_property = obj.ObjectProperty
 
         obj.ObjectLabel = self.getAvailableObjectsLabels()
-        obj.ObjectProperty = self.getAvailableLabels(obj.ObjectLabel)
+        obj.ObjectProperty = self.getAvailableProperties(obj.ObjectLabel)
 
         try:
             obj.ObjectLabel = previous_label
@@ -83,14 +110,17 @@ class Parameter:
 
     @staticmethod
     def getAvailableObjects():
+        """ Get all objects in the active document that can be parametric"""
         return [ obj for obj in FreeCAD.ActiveDocument.Objects if 'Part::' in obj.TypeId ]
 
     @staticmethod
     def getAvailableObjectsLabels():
+        """ Get the labels for all objects in the active document that can be parametric"""
         return [ str(obj.Label) for obj in Parameter.getAvailableObjects()]
 
     @staticmethod
-    def getAvailableLabels(obj_label):
+    def getAvailableProperties(obj_label):
+        """ Get all the properties in an object that can be assigned to a parameter"""
         obj = FreeCAD.ActiveDocument.getObjectsByLabel(obj_label)
         if obj:
             return [ property_name  for property_name in obj[0].PropertiesList if isinstance(getattr(obj[0], property_name), FreeCAD.Units.Quantity) ]
@@ -157,6 +187,12 @@ class ViewProviderParameter:
         """ When restoring the serialized object from document we have the chance to set some internals here.\'
             Since no data were serialized nothing needs to be done here."""
         return None
+
+
+def createParameter():
+    a=FreeCAD.ActiveDocument.addObject("App::FeaturePython", "Parameter")
+    Parameter(a)
+    ViewProviderParameter(a.ViewObject)
 
 def makeParameter():
     FreeCAD.newDocument()
