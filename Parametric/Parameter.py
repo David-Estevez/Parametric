@@ -213,11 +213,11 @@ def createParameter():
     a=FreeCAD.ActiveDocument.addObject("App::FeaturePython", "Parameter")
     Parameter(a)
     ViewProviderParameter(a.ViewObject)
+    return a
 
 def makeParameter():
     FreeCAD.newDocument()
     FreeCADGui.activateWorkbench("PartWorkbench")
     FreeCAD.ActiveDocument.addObject("Part::Box","Box")
-    a=FreeCAD.ActiveDocument.addObject("App::FeaturePython", "Parameter")
-    Parameter(a)
-    ViewProviderParameter(a.ViewObject)
+
+    createParameter()

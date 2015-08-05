@@ -15,88 +15,78 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_2">
    <item>
-    <widget class="QLabel" name="label">
+    <widget class="QLabel" name="objectQLabel">
      <property name="text">
       <string>Object:</string>
      </property>
     </widget>
    </item>
    <item>
-    <widget class="QComboBox" name="comboBox_2"/>
+    <widget class="QComboBox" name="objectComboBox"/>
    </item>
    <item>
-    <widget class="QLabel" name="label_2">
+    <widget class="QLabel" name="propertyQLabel">
      <property name="text">
       <string>Property:</string>
      </property>
     </widget>
    </item>
    <item>
-    <widget class="QComboBox" name="comboBox"/>
+    <widget class="QComboBox" name="propertyComboBox"/>
    </item>
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout">
+    <layout class="QHBoxLayout" name="nameHorizontalLayout">
      <item>
-      <widget class="QLabel" name="label_3">
+      <widget class="QLabel" name="nameQLabel">
        <property name="text">
         <string>Name:</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QLineEdit" name="lineEdit"/>
+      <widget class="QLineEdit" name="nameLineEdit"/>
      </item>
     </layout>
    </item>
    <item>
-    <widget class="QGroupBox" name="groupBox">
+    <widget class="QGroupBox" name="rangeGroupBox">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
      <property name="title">
       <string>Range</string>
      </property>
      <layout class="QVBoxLayout" name="verticalLayout_3">
       <item>
-       <layout class="QHBoxLayout" name="horizontalLayout_2">
+       <layout class="QHBoxLayout" name="minRangeHorizontalLayout">
         <item>
-         <widget class="QCheckBox" name="checkBox">
+         <widget class="QCheckBox" name="minRangeCheckBox">
           <property name="text">
            <string>Min</string>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="QDoubleSpinBox" name="doubleSpinBox">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-          <property name="minimum">
-           <double>-99.989999999999995</double>
-          </property>
-         </widget>
+         <widget class="QDoubleSpinBox" name="minRangeSpinBox"/>
         </item>
        </layout>
       </item>
       <item>
-       <layout class="QHBoxLayout" name="horizontalLayout_4">
+       <layout class="QHBoxLayout" name="maxRangeHorizontalLayout">
         <item>
-         <widget class="QCheckBox" name="checkBox_2">
+         <widget class="QCheckBox" name="maxRangeCheckBox">
           <property name="text">
            <string>Max</string>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="QDoubleSpinBox" name="doubleSpinBox_2">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
+         <widget class="QDoubleSpinBox" name="maxRangeSpinBox">
           <property name="readOnly">
            <bool>false</bool>
           </property>
           <property name="accelerated">
            <bool>false</bool>
-          </property>
-          <property name="minimum">
-           <double>-99.989999999999995</double>
           </property>
          </widget>
         </item>
@@ -106,16 +96,16 @@
     </widget>
    </item>
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_3">
+    <layout class="QHBoxLayout" name="valueHorizontalLayout">
      <item>
-      <widget class="QLabel" name="label_4">
+      <widget class="QLabel" name="valueQLabel">
        <property name="text">
         <string>Value</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QDoubleSpinBox" name="doubleSpinBox_3">
+      <widget class="QDoubleSpinBox" name="valueSpinBox">
        <property name="enabled">
         <bool>true</bool>
        </property>
@@ -123,7 +113,7 @@
         <bool>false</bool>
        </property>
        <property name="minimum">
-        <double>-99.989999999999995</double>
+        <double>-1.000000000000000</double>
        </property>
       </widget>
      </item>
@@ -143,9 +133,9 @@
     </spacer>
    </item>
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_5">
+    <layout class="QHBoxLayout" name="addHorizontalLayout">
      <item>
-      <widget class="QPushButton" name="pushButton_2">
+      <widget class="QPushButton" name="addPushButton">
        <property name="text">
         <string>Add</string>
        </property>
