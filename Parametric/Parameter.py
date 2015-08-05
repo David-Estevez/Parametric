@@ -5,7 +5,7 @@ __author__ = 'def'
 class Parameter:
     def __init__(self, obj):
         obj.Proxy = self
-        self.Type = "Parameter"
+        self.TypeId = "Parameter"
         obj.addProperty("App::PropertyString", "Name", "Parameter", "Name of the parameter")
         obj.addProperty("App::PropertyQuantity", "Value", "Parameter", "Value currently assigned to the parameter")
         obj.addProperty("App::PropertyEnumeration", "ObjectLabel", "Parameter", "Label of the object assigned to this parameter")
@@ -17,27 +17,27 @@ class Parameter:
         obj.Name = obj.Label
         obj.ObjectLabel = self.getAvailableObjectsLabels()
         obj.ObjectProperty = self.getAvailableProperties(obj.ObjectLabel)
-        self.onObjectPropertyChanged(obj)
-
+        self.onObjectLabelChanged(obj)
 
     def onChanged(self, obj, prop):
         "'''Do something when a property has changed'''"
         if prop == 'Name':
-            self.
-        if prop == 'Value':
+            self.onNameChanged(obj)
+        elif prop == 'Value':
             self.onValueChanged(obj)
-        elif prop == 'ObjectLabel':
-            self.onObjectLabelChanged(obj)
         elif prop == 'ObjectProperty':
             self.onObjectPropertyChanged(obj)
+        elif prop == 'ObjectLabel':
+            self.onObjectLabelChanged(obj)
 
     def execute(self, obj):
         "'''Do something when doing a recomputation, this method is mandatory'''"
         if obj.ViewObject:
             obj.ViewObject.update()
 
-        #obj.ObjectLabel = self.getAvailableObjectsLabels()
-        #obj.ObjectProperty = self.getAvailableLabels(obj.ObjectLabel)
+        FreeCAD.Console.PrintMessage("Recomputing object: " + str(obj.Label) + "\n")
+        obj.ObjectLabel = self.getAvailableObjectsLabels()
+        self.onObjectLabelChanged(obj)
 
     # def __getstate__(self):
     #     return self.Type
@@ -136,7 +136,11 @@ class ViewProviderParameter:
 
     def attach(self, obj):
         "'''Setup the scene sub-graph of the view provider, this method is mandatory'''"
-        pass
+        FreeCAD.Console.PrintMessage("[View] Attaching\n")
+
+    def execute(self, obj):
+        "'''Do something when doing a recomputation'''"
+        FreeCAD.Console.PrintMessage("[View] Recomputing\n")
 
     def updateData(self, obj, prop):
         "'''If a property of the handled feature has changed we have the chance to handle this here'''"
@@ -176,6 +180,22 @@ class ViewProviderParameter:
     #         "  ##$$$$$#      ",
     #         "   #######      "};
     #         """
+
+    # DisplayModes - This does not have much sense, since a parameter is not shown in view
+    def getDisplayModes(self,obj):
+        "'''Return a list of display modes.'''"
+        modes=[]
+        modes.append("None")
+        return modes
+
+    def getDefaultDisplayMode(self):
+        """Return the name of the default display mode. It must be defined in getDisplayModes."""
+        return "None"
+
+    def setDisplayMode(self,mode):
+        """Map the display mode defined in attach with those defined in getDisplayModes.
+        Since they have the same names nothing needs to be done. This method is optional"""
+        return mode
 
     def __getstate__(self):
         """ When saving the document this object gets stored using Python's json module.\'

@@ -8,8 +8,8 @@ class ParametricWorkbench (Workbench):
 
     def Initialize(self):
         "This function is executed when FreeCAD starts"
-        import Parametric, AddParameter # import here all the needed files that create your FreeCAD commands
-        self.list = ["AddParameter"] # A list of command names created in the line above
+        import Parametric, AddParameter, RecomputeParameters # import here all the needed files that create your FreeCAD commands
+        self.list = ["AddParameter", "RecomputeParameters"] # A list of command names created in the line above
         self.appendToolbar("Parametric Toolbar",self.list) # creates a new toolbar with your commands
         self.appendMenu("Parametric",self.list) # creates a new menu
 

@@ -21,8 +21,10 @@ class AddParameter:
         return
 
     def IsActive(self):
-        """Here you can define if the command must be active or not (greyed) if certain conditions
-        are met or not. This function is optional."""
+        """ Only active when there is a document """
+        if not FreeCAD.ActiveDocument:
+            return False
+
         return True
 
 FreeCADGui.addCommand('AddParameter', AddParameter())
