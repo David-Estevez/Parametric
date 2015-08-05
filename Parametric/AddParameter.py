@@ -85,19 +85,24 @@ class AddParameterTaskPanel:
 
     def onAdd(self):
         if self.isFormValid():
-            a = Parameter.createParameter()
+            try:
+                a = Parameter.createParameter()
 
-            name = self.form.nameLineEdit.text()
-            if name:
-                a.Name = name
+                name = self.form.nameLineEdit.text()
+                if name:
+                    a.Name = name
 
-            a.ObjectLabel = self.form.objectComboBox.currentText()
-            a.PropertyLabel = self.form.propertyComboBox.currentText()
+                a.ObjectLabel = str(self.form.objectComboBox.currentText())
+                a.ObjectProperty = str(self.form.propertyComboBox.currentText())
 
-            FreeCAD.Console.PrintMessage("Value: " + str(self.form.valueSpinBox.value()) + " \n")
-            a.Value = self.form.valueSpinBox.value()
+                FreeCAD.Console.PrintMessage("Value: " + str(self.form.valueSpinBox.value()) + "\n")
+                a.Value = self.form.valueSpinBox.value()
+            except Exception, e:
+                FreeCAD.Console.PrintError(str(e)+ "\n")
 
-        self.default()
+            self.default()
+        else:
+            FreeCAD.Console.PrintError("Invalid data. Could not create parameter.\n")
 
     def onObjectSelected(self):
         """  When a different object is selected, properties have to be refreshed """
