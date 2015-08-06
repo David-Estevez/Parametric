@@ -10,6 +10,11 @@ class Parameter:
         obj.addProperty("App::PropertyQuantity", "Value", "Parameter", "Value currently assigned to the parameter")
         obj.addProperty("App::PropertyEnumeration", "ObjectLabel", "Parameter", "Label of the object assigned to this parameter")
         obj.addProperty("App::PropertyEnumeration", "ObjectProperty", "Parameter", "Label of the property assigned to this parameter")
+        obj.addProperty("App::PropertyBool", "MaxRangeEnabled", "Range", "True if maximum range limit is enabled")
+        obj.addProperty("App::PropertyQuantity", "MaxRange", "Range", "Max value for the parameter")
+        obj.addProperty("App::PropertyBool", "MinRangeEnabled", "Range", "True if minimum range limit is enabled")
+        obj.addProperty("App::PropertyQuantity", "MinRange", "Range", "Min value for the parameter")
+
         obj.setEditorMode("ObjectLabel", 0)
         obj.setEditorMode("ObjectProperty", 0)
 
@@ -19,12 +24,20 @@ class Parameter:
         obj.ObjectProperty = self.getAvailableProperties(obj.ObjectLabel)
         self.onObjectLabelChanged(obj)
 
+        # Default range:
+        obj.MaxRangeEnabled=False
+        obj.setEditorMode("MaxRange", 2)
+        obj.MinRangeEnabled=False
+        obj.setEditorMode("MinRange", 2)
+
     def onChanged(self, obj, prop):
         "'''Do something when a property has changed'''"
         if prop == 'Name':
             self.onNameChanged(obj)
         elif prop == 'Value':
             self.onValueChanged(obj)
+        elif prop == 'MaxRangeEnabled' or prop == 'MinRangeEnabled':
+            self.onRangeToggled(obj, prop)
         elif prop == 'ObjectProperty':
             self.onObjectPropertyChanged(obj)
         elif prop == 'ObjectLabel':
@@ -56,6 +69,24 @@ class Parameter:
     def onValueChanged(self, obj):
         """ Things to do when the value of the parameter is changed. Recalculates all objects that depend on this value"""
         return self.update_referenced_objects(obj)
+
+    def onRangeToggled(self, obj, prop):
+        """ Things to do when the range of the parameter is enabled/disabled. Enables the range properties."""
+        if prop == 'MaxRangeEnabled':
+            if obj.MaxRangeEnabled:
+                obj.setEditorMode("MaxRange", 0)
+                obj.MaxRange=obj.Value.Value
+                self.onRangeChanged(obj)
+            else:
+                obj.setEditorMode("MaxRange", 2)
+        elif prop == 'MinRangeEnabled':
+            if obj.MinRangeEnabled:
+                obj.setEditorMode("MinRange", 0)
+                obj.MinRange=obj.Value.Value
+                self.onRangeChanged(obj)
+            else:
+                obj.setEditorMode("MinRange", 2)
+
 
     def onRangeChanged(self, obj):
         """ Things to do when the range of the parameter is modified. Crops value to be within the new range"""
@@ -158,10 +189,17 @@ class ViewProviderParameter:
     def updateData(self, obj, prop):
         "'''If a property of the handled feature has changed we have the chance to handle this here'''"
         FreeCAD.Console.PrintMessage("[View] Update data for property: " + str(prop) + "\n")
+        if prop == 'MaxRangeEnabled' or prop == 'MinRangeEnabled':
+            currentSelection = FreeCADGui.Selection.getSelection(FreeCAD.ActiveDocument.Label)
+            FreeCADGui.Selection.clearSelection()
+            FreeCAD.Console.PrintMessage("Note: reselection is not implemented because of issue #1941\n")
+            # for selected in currentSelection:
+            #     FreeCADGui.Selection.addSelection(selected)
 
     def onChanged(self, obj, prop):
         "'''Here we can do something when a single property got changed'''"
         FreeCAD.Console.PrintMessage("[View] Changed property: " + str(prop) + "\n")
+
 
     # def getIcon(self):
     #     "'''Return the icon in XPM format which will appear in the tree view. This method is\'''
