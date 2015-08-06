@@ -1,6 +1,8 @@
 __author__ = 'def'
 
 import os, sys
+from PySide.QtGui import QRegExpValidator
+from PySide.QtCore import QRegExp
 
 import FreeCAD, FreeCADGui
 import Parameter
@@ -33,6 +35,8 @@ class AddParameterTaskPanel:
 
     def __init__(self):
         self.form = FreeCADGui.PySideUic.loadUi(os.path.join(os.path.realpath(os.path.dirname(__file__)), 'AddParameter.ui'))
+        rx = QRegExp("^([a-zA-Z][]a-zA-Z0-9_]*)$")
+        self.form.nameLineEdit.setValidator(QRegExpValidator(rx))
 
         # Connect Signals and Slots
         self.form.addPushButton.clicked.connect(self.onAdd)
@@ -122,6 +126,12 @@ class AddParameterTaskPanel:
         self.setPropertyValue()
 
     def isFormValid(self):
+        # Check if name is already set
+        params = [obj.Name for obj in Parameter.Parameter.getAvailableParameters()]
+        if self.form.nameLineEdit.text() in params:
+            FreeCAD.Console.PrintError("Parameter name already in use\n")
+            return False
+
         return True
 
     def accept(self):
