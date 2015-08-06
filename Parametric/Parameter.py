@@ -127,6 +127,19 @@ class Parameter:
         else:
             return []
 
+    @staticmethod
+    def getAvailableParameters():
+        """ Get all parameters on the document """
+        parameters = []
+        for obj in FreeCAD.ActiveDocument.Objects:
+            try:
+                if obj.Proxy.TypeId == 'Parameter':
+                    parameters.append(obj)
+            except AttributeError:
+                pass
+        return parameters
+
+
 
 
 class ViewProviderParameter:
