@@ -38,6 +38,8 @@ class Parameter:
             self.onValueChanged(obj)
         elif prop == 'MaxRangeEnabled' or prop == 'MinRangeEnabled':
             self.onRangeToggled(obj, prop)
+        elif prop == 'MaxRange' or prop == 'MinRange':
+            self.onRangeChanged(obj)
         elif prop == 'ObjectProperty':
             self.onObjectPropertyChanged(obj)
         elif prop == 'ObjectLabel':
@@ -90,8 +92,13 @@ class Parameter:
 
     def onRangeChanged(self, obj):
         """ Things to do when the range of the parameter is modified. Crops value to be within the new range"""
-        # To be implemented
-        pass
+        if obj.MaxRangeEnabled:
+            if obj.Value.Value > obj.MaxRange:
+                obj.Value.Value = obj.MaxRange
+
+        if obj.MinRangeEnabled:
+            if obj.Value.Value < obj.MinRange:
+                obj.Value.Value = obj.MinRange
 
     def onObjectPropertyChanged(self, obj):
         """ Things to do when a different object property is selected. Checks the units and recomputes dependencies"""
