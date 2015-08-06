@@ -1,6 +1,6 @@
 __author__ = 'def'
 
-import os
+import os, sys
 
 import FreeCAD, FreeCADGui
 import Parameter
@@ -75,30 +75,39 @@ class AddParameterTaskPanel:
             self.form.propertyComboBox.setEditable(False)
 
     def setPropertyValue(self):
-        currentObject = self.form.objectComboBox.currentText()
-        currentProperty = self.form.propertyComboBox.currentText()
-        self.form.valueSpinBox.setValue(
-            FreeCAD.ActiveDocument.getObjectsByLabel(currentObject)[0].getPropertyByName(currentProperty).Value)
+        # Get current object and property
+        currentObjectText = self.form.objectComboBox.currentText()
+        currentPropertyText = self.form.propertyComboBox.currentText()
+        currentProperty = FreeCAD.ActiveDocument.getObjectsByLabel(currentObjectText)[0].getPropertyByName(currentPropertyText)
+
+        # Set spinbox range
+        float_max = sys.float_info.max
+        self.form.valueSpinBox.setMaximum(float_max)
+        if currentProperty.Unit.Type == 'Angle':
+            self.form.valueSpinBox.setMinimum(-float_max)
+        else:
+            self.form.valueSpinBox.setMinimum(0)
+
+        # Set current object value
+        self.form.valueSpinBox.setValue(currentProperty.Value)
 
     def update(self):
         FreeCAD.Console.PrintMessage(dir(self.form))
 
     def onAdd(self):
         if self.isFormValid():
-            try:
-                a = Parameter.createParameter()
+            a = Parameter.createParameter()
 
-                name = self.form.nameLineEdit.text()
-                if name:
-                    a.Name = name
+            name = self.form.nameLineEdit.text()
+            if name:
+                a.Name = name
 
-                a.ObjectLabel = str(self.form.objectComboBox.currentText())
-                a.ObjectProperty = str(self.form.propertyComboBox.currentText())
+            a.ObjectLabel = str(self.form.objectComboBox.currentText())
+            a.ObjectProperty = str(self.form.propertyComboBox.currentText())
 
-                FreeCAD.Console.PrintMessage("Value: " + str(self.form.valueSpinBox.value()) + "\n")
-                a.Value = self.form.valueSpinBox.value()
-            except Exception, e:
-                FreeCAD.Console.PrintError(str(e)+ "\n")
+            FreeCAD.Console.PrintMessage("Value: " + str(self.form.valueSpinBox.value()) + "\n")
+            a.Value = self.form.valueSpinBox.value()
+
 
             self.default()
         else:
@@ -106,12 +115,10 @@ class AddParameterTaskPanel:
 
     def onObjectSelected(self):
         """  When a different object is selected, properties have to be refreshed """
-        FreeCAD.Console.PrintMessage("Changed object selection!\n")
         self.setAvailableProperties()
 
     def onPropertySelected(self):
         """ When a different property is selected, the value should be changed accordingly """
-        FreeCAD.Console.PrintMessage("Changed property selection!\n")
         self.setPropertyValue()
 
     def isFormValid(self):
