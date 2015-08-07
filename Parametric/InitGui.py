@@ -2,7 +2,7 @@ __author__ = 'def'
 
 class ParametricWorkbench (Workbench):
 
-    MenuText = "Parametric workbench"
+    MenuText = "Parametric"
     ToolTip = "Work with parameters in FreeCAD"
     Icon = FreeCAD.getResourceDir() + "Mod/Parametric/Resources/icons/parametric.svg"
 
