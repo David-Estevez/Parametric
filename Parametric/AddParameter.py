@@ -43,7 +43,12 @@ class AddParameterTaskPanel:
         self.form.addPushButton.clicked.connect(self.form.nameLineEdit.clear)
         self.form.objectComboBox.currentIndexChanged.connect(self.onObjectSelected)
         self.form.propertyComboBox.currentIndexChanged.connect(self.onPropertySelected)
+        self.form.minRangeCheckBox.stateChanged.connect(self.onMinRangeToggled)
+        self.form.minRangeSpinBox.valueChanged.connect(self.onMinRangeValueChanged)
+        self.form.maxRangeCheckBox.stateChanged.connect(self.onMaxRangeToggled)
+        self.form.maxRangeSpinBox.valueChanged.connect(self.onMaxRangeValueChanged)
 
+        # Set default state
         self.default()
 
 
@@ -60,6 +65,7 @@ class AddParameterTaskPanel:
         self.setPropertyValue()
 
     def setAvailableObjects(self):
+        """ Sets in the combobox the objects that can be parametric """
         objectLabels = Parameter.Parameter.getAvailableObjectsLabels()
         if objectLabels:
             self.form.objectComboBox.clear()
@@ -71,6 +77,7 @@ class AddParameterTaskPanel:
             self.form.propertyComboBox.setEditable(False)
 
     def setAvailableProperties(self):
+        """ Sets in the combobox the properties that can be parametric """
         propertyLabels = Parameter.Parameter.getAvailableProperties(self.form.objectComboBox.currentText())
         if propertyLabels:
             self.form.propertyComboBox.clear()
@@ -79,18 +86,19 @@ class AddParameterTaskPanel:
             self.form.propertyComboBox.setEditable(False)
 
     def setPropertyValue(self):
+        """ Sets the default property value to be the current value from the part property """
         # Get current object and property
         currentObjectText = self.form.objectComboBox.currentText()
         currentPropertyText = self.form.propertyComboBox.currentText()
         currentProperty = FreeCAD.ActiveDocument.getObjectsByLabel(currentObjectText)[0].getPropertyByName(currentPropertyText)
 
         # Set spinbox range
-        float_max = sys.float_info.max
-        self.form.valueSpinBox.setMaximum(float_max)
-        if currentProperty.Unit.Type == 'Angle':
-            self.form.valueSpinBox.setMinimum(-float_max)
-        else:
-            self.form.valueSpinBox.setMinimum(0)
+        self.form.minRangeSpinBox.setEnabled(False)
+        self.form.minRangeSpinBox.setValue(0)
+        self.setMinValueLimits(None)
+        self.form.maxRangeSpinBox.setEnabled(False)
+        self.form.maxRangeSpinBox.setValue(0)
+        self.setMaxValueLimits(None)
 
         # Set current object value
         self.form.valueSpinBox.setValue(currentProperty.Value)
@@ -109,10 +117,17 @@ class AddParameterTaskPanel:
             a.ObjectLabel = str(self.form.objectComboBox.currentText())
             a.ObjectProperty = str(self.form.propertyComboBox.currentText())
 
-            FreeCAD.Console.PrintMessage("Value: " + str(self.form.valueSpinBox.value()) + "\n")
+            if self.form.minRangeCheckBox.isChecked():
+                a.MinRangeEnabled = True
+                a.MinRange = self.form.minRangeSpinBox.value()
+
+            if self.form.maxRangeCheckBox.isChecked():
+                a.MaxRangeEnabled = True
+                a.MaxRange = self.form.maxRangeSpinBox.value()
+
             a.Value = self.form.valueSpinBox.value()
 
-
+            # Reset default widget
             self.default()
         else:
             FreeCAD.Console.PrintError("Invalid data. Could not create parameter.\n")
@@ -125,7 +140,62 @@ class AddParameterTaskPanel:
         """ When a different property is selected, the value should be changed accordingly """
         self.setPropertyValue()
 
+    def onMaxRangeToggled(self):
+        """ When the max range checkbox is toggled, this enables/disables the corresponding spinBox """
+        if self.form.maxRangeCheckBox.isChecked():
+            self.form.maxRangeSpinBox.setEnabled(True)
+            self.form.maxRangeSpinBox.setValue(self.form.valueSpinBox.value())
+        else:
+            self.form.maxRangeSpinBox.setEnabled(False)
+            self.form.maxRangeSpinBox.setValue(0)
+            self.setMaxValueLimits(None)
+
+    def onMaxRangeValueChanged(self):
+        """ Updates the value spinbox limits """
+        self.setMaxValueLimits(self.form.maxRangeSpinBox.value())
+
+    def onMinRangeToggled(self):
+        """ When the min range checkbox is toggled, this enables/disables the corresponding spinBox """
+        if self.form.minRangeCheckBox.isChecked():
+            self.form.minRangeSpinBox.setEnabled(True)
+            self.form.minRangeSpinBox.setValue(self.form.valueSpinBox.value())
+            self.onMinRangeValueChanged()
+        else:
+            self.form.minRangeSpinBox.setEnabled(False)
+            self.form.minRangeSpinBox.setValue(0)
+            self.setMinValueLimits(None)
+
+    def onMinRangeValueChanged(self):
+        """ Updates the value spinbox limits """
+        self.setMinValueLimits(self.form.minRangeSpinBox.value())
+
+    def setMaxValueLimits(self, max_limit=None):
+        """ Sets the max values of the value spin box """
+        if not max_limit:
+            float_max = sys.float_info.max
+            self.form.valueSpinBox.setMaximum(float_max)
+        else:
+            self.form.valueSpinBox.setMaximum(max_limit)
+
+    def setMinValueLimits(self, min_limit=None):
+        """ Sets the max values of the value spin box """
+        # Get current object and property
+        currentObjectText = self.form.objectComboBox.currentText()
+        currentPropertyText = self.form.propertyComboBox.currentText()
+        currentProperty = FreeCAD.ActiveDocument.getObjectsByLabel(currentObjectText)[0].getPropertyByName(currentPropertyText)
+
+        # Set spinbox range
+        if not min_limit:
+            if currentProperty.Unit.Type == 'Angle':
+                float_max = sys.float_info.max
+                self.form.valueSpinBox.setMinimum(-float_max)
+            else:
+                self.form.valueSpinBox.setMinimum(0)
+        else:
+            self.form.valueSpinBox.setMinimum(min_limit)
+
     def isFormValid(self):
+        """ Checks the information in the form (in this case, if the name is already set in other parameter """
         # Check if name is already set
         params = [obj.Name for obj in Parameter.Parameter.getAvailableParameters()]
         if self.form.nameLineEdit.text() in params:
