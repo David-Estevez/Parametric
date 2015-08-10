@@ -11,7 +11,7 @@ class AddParameter:
     """Creates a new parameter"""
 
     def GetResources(self):
-        return {'Pixmap'  : 'My_Command_Icon', # the name of a svg file available in the resources
+        return {'Pixmap'  : os.path.join(os.path.realpath(os.path.dirname(__file__)), 'Gui', 'Resources', 'icons', 'AddParameter.svg'), # the name of a svg file available in the resources
                 'MenuText': 'Add parameter',
                 'ToolTip' : 'Create a new parameter associated to an object'}
 
