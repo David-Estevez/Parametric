@@ -1,4 +1,5 @@
 import FreeCAD, FreeCADGui
+import math
 
 __author__ = 'def'
 
@@ -104,7 +105,7 @@ class Parameter:
     def onObjectPropertyChanged(self, obj):
         """ Things to do when a different object property is selected. Checks the units and recomputes dependencies"""
         # Get the value currently assigned to the reference
-        obj.Value.Value  = FreeCAD.ActiveDocument.getObjectsByLabel(obj.ObjectLabel)[0].getPropertyByName(obj.ObjectProperty).Value
+        obj.Value.Value  = self.getReferencedValue(obj)
         self.onValueChanged(obj)
 
     def onObjectLabelChanged(self, obj):
@@ -137,16 +138,55 @@ class Parameter:
             pass
 
     @staticmethod
-    def updateReferencedObjects( obj):
+    def getReferencedValue(obj):
+        if '.' not in obj.ObjectProperty:
+            return FreeCAD.ActiveDocument.getObjectsByLabel(obj.ObjectLabel)[0].getPropertyByName(obj.ObjectProperty).Value
+        else:
+            object = FreeCAD.ActiveDocument.getObjectsByLabel(obj.ObjectLabel)[0]
+            if 'Placement.' in obj.ObjectProperty:
+                placement = getattr(object, "Placement")
+                if 'Placement.Base.' in obj.ObjectProperty:
+                    base = getattr(placement, "Base")
+                    v = getattr(base, obj.ObjectProperty.split('.')[-1])
+                    return v
+                elif 'Placement.Rotation.' in obj.ObjectProperty:
+                    rotation = getattr(placement, "Rotation")
+                    if 'Placement.Rotation.Angle' in obj.ObjectProperty:
+                        return math.degrees(rotation.Angle)
+                    elif 'Placement.Rotation.Axis.' in obj.ObjectProperty:
+                        axis = getattr(rotation, 'Axis')
+                        v = getattr(axis, obj.ObjectProperty.split('.')[-1])
+                        return v
+
+    @staticmethod
+    def updateReferencedObjects(obj):
             objects = FreeCAD.ActiveDocument.getObjectsByLabel(obj.ObjectLabel)
 
             if objects:
                 for object in objects:
-                    try:
-                        setattr(object, obj.ObjectProperty, obj.Value)
-                        FreeCAD.Console.PrintMessage("Changed property: " + str(obj.ObjectProperty) + " with value: " + str(obj.Value) + "\n")
-                    except:
-                        FreeCAD.Console.PrintError("Could not change property: " + str(obj.ObjectProperty) + " with value: " + str(obj.Value) + "\n")
+                    if '.' not in obj.ObjectProperty:
+                        try:
+                            setattr(object, obj.ObjectProperty, obj.Value)
+                            FreeCAD.Console.PrintMessage("Changed property: " + str(obj.ObjectProperty) + " with value: " + str(obj.Value) + "\n")
+                        except:
+                            FreeCAD.Console.PrintError("Could not change property: " + str(obj.ObjectProperty) + " with value: " + str(obj.Value) + "\n")
+                    else:
+                        if 'Placement.' in obj.ObjectProperty:
+                            placement = getattr(object, "Placement")
+                            if 'Placement.Base.' in obj.ObjectProperty:
+                                base = getattr(placement, "Base")
+                                setattr(base, obj.ObjectProperty.split('.')[-1], obj.Value.Value)
+                            elif 'Placement.Rotation.' in obj.ObjectProperty:
+                                rotation = getattr(placement, "Rotation")
+                                if 'Placement.Rotation.Angle' in obj.ObjectProperty:
+                                    value_radians =  math.radians(obj.Value.Value)
+                                    setattr(rotation, "Angle", value_radians)
+                                elif 'Placement.Rotation.Axis.' in obj.ObjectProperty:
+                                    axis = getattr(rotation, 'Axis')
+                                    setattr(axis, obj.ObjectProperty.split('.')[-1], obj.Value.Value)
+
+                        FreeCAD.Console.PrintError("Update reference for this property is not implemented yet\n")
+
 
     @staticmethod
     def getAvailableObjects():
@@ -161,9 +201,22 @@ class Parameter:
     @staticmethod
     def getAvailableProperties(obj_label):
         """ Get all the properties in an object that can be assigned to a parameter"""
-        obj = FreeCAD.ActiveDocument.getObjectsByLabel(obj_label)
+        obj = FreeCAD.ActiveDocument.getObjectsByLabel(obj_label)[0]
         if obj:
-            return [ property_name  for property_name in obj[0].PropertiesList if isinstance(getattr(obj[0], property_name), FreeCAD.Units.Quantity) ]
+            properties = [ property_name  for property_name in obj.PropertiesList if isinstance(getattr(obj, property_name), FreeCAD.Units.Quantity) ]
+            try:
+                if isinstance(getattr(obj, 'Placement'), FreeCAD.Base.Placement):
+                    properties.append('Placement.Base.x')
+                    properties.append('Placement.Base.y')
+                    properties.append('Placement.Base.z')
+                    properties.append('Placement.Rotation.Angle')
+                    properties.append('Placement.Rotation.Axis.x')
+                    properties.append('Placement.Rotation.Axis.y')
+                    properties.append('Placement.Rotation.Axis.z')
+            except AttributeError:
+                pass
+
+            return properties
         else:
             return []
 
