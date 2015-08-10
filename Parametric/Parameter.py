@@ -69,8 +69,9 @@ class Parameter:
         pass
 
     def onValueChanged(self, obj):
-        """ Things to do when the value of the parameter is changed. Recalculates all objects that depend on this value"""
-        return self.update_referenced_objects(obj)
+        """ Things to do when the value of the parameter is changed. Checks range and recalculates all objects that depend on this value"""
+        self.onRangeChanged(obj)
+        return self.updateReferencedObjects(obj)
 
     def onRangeToggled(self, obj, prop):
         """ Things to do when the range of the parameter is enabled/disabled. Enables the range properties."""
@@ -94,11 +95,11 @@ class Parameter:
         """ Things to do when the range of the parameter is modified. Crops value to be within the new range"""
         if obj.MaxRangeEnabled:
             if obj.Value.Value > obj.MaxRange:
-                obj.Value.Value = obj.MaxRange
+                obj.Value.Value = obj.MaxRange.Value
 
         if obj.MinRangeEnabled:
             if obj.Value.Value < obj.MinRange:
-                obj.Value.Value = obj.MinRange
+                obj.Value.Value = obj.MinRange.Value
 
     def onObjectPropertyChanged(self, obj):
         """ Things to do when a different object property is selected. Checks the units and recomputes dependencies"""
@@ -135,7 +136,8 @@ class Parameter:
         except:
             pass
 
-    def update_referenced_objects(self, obj):
+    @staticmethod
+    def updateReferencedObjects( obj):
             objects = FreeCAD.ActiveDocument.getObjectsByLabel(obj.ObjectLabel)
 
             if objects:
@@ -177,6 +179,37 @@ class Parameter:
                 pass
         return parameters
 
+    # Things to do when there are changes in the document
+    @staticmethod
+    def slotCreatedObject(obj):
+        """ Recomputes the available objects enum for all parameters. """
+        for param in Parameter.getAvailableParameters():
+            param.touch()
+        FreeCAD.ActiveDocument.recompute()
+
+    @staticmethod
+    def slotDeletedObject(obj):
+        """
+        Checks if an existing parameter depends on the object deleted and, if so, deletes the parameter.
+        For the rest of the parameters, recomputes the available objects enum.
+        """
+        for param in Parameter.getAvailableParameters():
+            if param.ObjectLabel == obj.Label:
+                FreeCAD.ActiveDocument.removeObject(param.Label)
+                continue
+            param.touch()
+        FreeCAD.ActiveDocument.recompute()
+
+    @staticmethod
+    def slotChangedObject(obj, prop):
+        """ Sync to be implemented. Needs to be careful to avoid entering in a loop. """
+        pass
+        # FreeCAD.Console.PrintMessage("Modified: %s from  %s\n"%(prop, obj.Label))
+        # for param in Parameter.getAvailableParameters():
+        #     param.touch()
+        # FreeCAD.ActiveDocument.recompute()
+
+
 
 
 
@@ -187,15 +220,17 @@ class ViewProviderParameter:
 
     def attach(self, obj):
         "'''Setup the scene sub-graph of the view provider, this method is mandatory'''"
-        FreeCAD.Console.PrintMessage("[View] Attaching\n")
+        # FreeCAD.Console.PrintMessage("[View] Attaching\n")
+        pass
 
     def execute(self, obj):
         "'''Do something when doing a recomputation'''"
-        FreeCAD.Console.PrintMessage("[View] Recomputing\n")
+        # FreeCAD.Console.PrintMessage("[View] Recomputing\n")
+        pass
 
     def updateData(self, obj, prop):
         "'''If a property of the handled feature has changed we have the chance to handle this here'''"
-        FreeCAD.Console.PrintMessage("[View] Update data for property: " + str(prop) + "\n")
+        # FreeCAD.Console.PrintMessage("[View] Update data for property: " + str(prop) + "\n")
         if prop == 'MaxRangeEnabled' or prop == 'MinRangeEnabled':
             currentSelection = FreeCADGui.Selection.getSelection(FreeCAD.ActiveDocument.Label)
             FreeCADGui.Selection.clearSelection()
@@ -205,8 +240,8 @@ class ViewProviderParameter:
 
     def onChanged(self, obj, prop):
         "'''Here we can do something when a single property got changed'''"
-        FreeCAD.Console.PrintMessage("[View] Changed property: " + str(prop) + "\n")
-
+        # FreeCAD.Console.PrintMessage("[View] Changed property: " + str(prop) + "\n")
+        pass
 
     # def getIcon(self):
     #     "'''Return the icon in XPM format which will appear in the tree view. This method is\'''
@@ -266,6 +301,7 @@ class ViewProviderParameter:
             Since no data were serialized nothing needs to be done here."""
         return None
 
+FreeCAD.addDocumentObserver(Parameter)
 
 def createParameter():
     a=FreeCAD.ActiveDocument.addObject("App::FeaturePython", "Parameter")
