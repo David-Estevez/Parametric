@@ -296,36 +296,41 @@ class ViewProviderParameter:
         # FreeCAD.Console.PrintMessage("[View] Changed property: " + str(prop) + "\n")
         pass
 
-    # def getIcon(self):
-    #     "'''Return the icon in XPM format which will appear in the tree view. This method is\'''
-    #             '''optional and if not defined a default icon is shown.'''"
-    #     return """
-    #         /* XPM */
-    #         static const char * ViewProviderBox_xpm[] = {
-    #         "16 16 6 1",
-    #         "   c None",
-    #         ".  c #141010",
-    #         "+  c #615BD2",
-    #         "@  c #C39D55",
-    #         "#  c #000000",
-    #         "$  c #57C355",
-    #         "        ........",
-    #         "   ......++..+..",
-    #         "   .@@@@.++..++.",
-    #         "   .@@@@.++..++.",
-    #         "   .@@  .++++++.",
-    #         "  ..@@  .++..++.",
-    #         "###@@@@ .++..++.",
-    #         "##$.@@$#.++++++.",
-    #         "#$#$.$$$........",
-    #         "#$$#######      ",
-    #         "#$$#$$$$$#      ",
-    #         "#$$#$$$$$#      ",
-    #         "#$$#$$$$$#      ",
-    #         " #$#$$$$$#      ",
-    #         "  ##$$$$$#      ",
-    #         "   #######      "};
-    #         """
+    def getIcon(self):
+        """Return the icon in XPM format which will appear in the tree view. """
+        return """
+            /* XPM */
+            static const char * ViewProviderBox_xpm[] = {
+            "16 16 12 1",
+            " 	c None",
+            ".	c #000000",
+            "+	c #000308",
+            "@	c #0061FF",
+            "#	c #005EFF",
+            "$	c #000713",
+            "%	c #000712",
+            "&	c #001437",
+            "*	c #005FFF",
+            "=	c #00296D",
+            "-	c #000C1E",
+            ";	c #005DFF",
+            "                ",
+            "                ",
+            "                ",
+            "                ",
+            "       ....     ",
+            "      .. .      ",
+            "      . ..      ",
+            "      ....      ",
+            "..    ....    ..",
+            "..            ..",
+            ".+@#        #@$.",
+            "%&************=-",
+            "..;*        *;..",
+            "..            ..",
+            "..            ..",
+            "                "};
+            """
 
     # DisplayModes - This does not have much sense, since a parameter is not shown in view
     def getDisplayModes(self,obj):
