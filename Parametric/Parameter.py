@@ -1,6 +1,8 @@
 import FreeCAD, FreeCADGui
 import math
 
+import CustomPanel
+
 __author__ = 'def'
 
 class Parameter:
