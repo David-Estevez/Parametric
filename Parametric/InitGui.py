@@ -88,7 +88,6 @@ class ParametricWorkbench (Workbench):
             "                                                                ",
             "                                                                "};
             """
-    # Icon ="/home/def/Repositories/Parametric/Parametric/Gui/Resources/icons/Parametric.svg"
 
     def Initialize(self):
         "This function is executed when FreeCAD starts"
