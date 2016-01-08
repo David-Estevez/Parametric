@@ -265,6 +265,7 @@ class Parameter:
         for param in Parameter.getAvailableParameters():
             param.touch()
         FreeCAD.ActiveDocument.recompute()
+        FreeCAD.Console.PrintMessage("Created object with hash: {!r}cdcd,\n".format(hash(obj)))
 
     @staticmethod
     def slotDeletedObject(obj):
@@ -278,15 +279,16 @@ class Parameter:
                 continue
             param.touch()
         FreeCAD.ActiveDocument.recompute()
+        FreeCAD.Console.PrintMessage("Deleted object with hash: {!r}\n".format(hash(obj)))
 
     @staticmethod
     def slotChangedObject(obj, prop):
         """ Sync to be implemented. Needs to be careful to avoid entering in a loop. """
-        pass
         # FreeCAD.Console.PrintMessage("Modified: %s from  %s\n"%(prop, obj.Label))
         # for param in Parameter.getAvailableParameters():
         #     param.touch()
         # FreeCAD.ActiveDocument.recompute()
+        FreeCAD.Console.PrintMessage("Changed object with hash: {!r}\n".format(hash(obj)))
 
 
 
